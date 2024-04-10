@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { useRouter } from "next/router";
 import axios from "axios"
 import Spinner from "./Spinner";
@@ -10,7 +10,14 @@ export default function ProductForm({_id,title:existingTitle,description:existin
     const[goToProducts,setGoToProducts]=useState(false);
     const[images,setImages]=useState(existingImages||[]);
     const[isUploading,setIsUploading]=useState(false);
+    const[categories,setCategories]=useState([]);
+    const[category,setCategory]=useState('')
     const router=useRouter();
+    useEffect(()=>{
+        axios.get('/api/categories').then(result=>{
+            setCategories(result.data);
+        })
+    },[])
     async function createProduct(ev){
         ev.preventDefault();
         const data={title,description,price,images};
@@ -50,6 +57,13 @@ export default function ProductForm({_id,title:existingTitle,description:existin
            
             <label>Product name</label>
             <input type="text" placeholder="product Name" value={title} onChange={ev=>setTitle(ev.target.value)}/>
+            <label>Category</label>
+            <select>
+                <option value="">Uncategorized</option>
+                {categories.length>0 && categories.map(c=>(
+                    <option value={c._id}>{c.name}</option>
+                ))}
+            </select>
             <label>Photos</label>
             <div className="mb-2 flex flex-wrap gap-1">
                 <ReactSortable list={images} setList={updateImagesOrder} className="flex flex-wrap gap-1">
