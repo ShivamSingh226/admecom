@@ -3,7 +3,7 @@ import { useRouter } from "next/router";
 import axios from "axios"
 import Spinner from "./Spinner";
 import { ReactSortable } from "react-sortablejs";
-export default function ProductForm({_id,title:existingTitle,description:existingDescription,price:existingPrice,images:existingImages}){
+export default function ProductForm({_id,title:existingTitle,description:existingDescription,price:existingPrice,images:existingImages,category:existingCategory}){
     const [title,setTitle]=useState(existingTitle|| '');
     const[description,setDescription]=useState(existingDescription|| '');
     const[price,setPrice]=useState(existingPrice||'');
@@ -11,7 +11,7 @@ export default function ProductForm({_id,title:existingTitle,description:existin
     const[images,setImages]=useState(existingImages||[]);
     const[isUploading,setIsUploading]=useState(false);
     const[categories,setCategories]=useState([]);
-    const[category,setCategory]=useState('')
+    const[category,setCategory]=useState(existingCategory||'')
     const router=useRouter();
     useEffect(()=>{
         axios.get('/api/categories').then(result=>{
@@ -20,7 +20,7 @@ export default function ProductForm({_id,title:existingTitle,description:existin
     },[])
     async function createProduct(ev){
         ev.preventDefault();
-        const data={title,description,price,images};
+        const data={title,description,price,images,category};
         if(_id){
             await axios.put('/api/products',{...data,_id});
         }else{
@@ -58,7 +58,7 @@ export default function ProductForm({_id,title:existingTitle,description:existin
             <label>Product name</label>
             <input type="text" placeholder="product Name" value={title} onChange={ev=>setTitle(ev.target.value)}/>
             <label>Category</label>
-            <select>
+            <select value={category} onChange={ev=>setCategory(ev.target.value)}>
                 <option value="">Uncategorized</option>
                 {categories.length>0 && categories.map(c=>(
                     <option value={c._id}>{c.name}</option>
