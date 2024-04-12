@@ -3,9 +3,11 @@ import { useRouter } from "next/router";
 import axios from "axios"
 import Spinner from "./Spinner";
 import { ReactSortable } from "react-sortablejs";
-export default function ProductForm({_id,title:existingTitle,description:existingDescription,price:existingPrice,images:existingImages,category:existingCategory}){
+export default function ProductForm({_id,title:existingTitle,description:existingDescription,price:existingPrice,images:existingImages,category:existingCategory
+,properties:assignedProperties}){
     const [title,setTitle]=useState(existingTitle|| '');
     const[description,setDescription]=useState(existingDescription|| '');
+    const[productProperties,setProductProperties]=useState( assignedProperties||{});
     const[price,setPrice]=useState(existingPrice||'');
     const[goToProducts,setGoToProducts]=useState(false);
     const[images,setImages]=useState(existingImages||[]);
@@ -20,7 +22,7 @@ export default function ProductForm({_id,title:existingTitle,description:existin
     },[])
     async function createProduct(ev){
         ev.preventDefault();
-        const data={title,description,price,images,category};
+        const data={title,description,price,images,category,properties:productProperties};
         if(_id){
             await axios.put('/api/products',{...data,_id});
         }else{
@@ -51,6 +53,23 @@ export default function ProductForm({_id,title:existingTitle,description:existin
     function updateImagesOrder(images){
         setImages(images);
     }
+    function setProductProp(propName,value){
+        setProductProperties(prev=>{
+            const newProductProps={...prev};
+            newProductProps[propName]=value;
+            return newProductProps;
+        })
+    }
+    const propertiesToFill=[];
+    if(categories.length> 0 && category){
+        let selCatInfo=categories.find(({_id})=>_id===category);
+        propertiesToFill.push(...selCatInfo.properties);
+        while(selCatInfo?.parent?._id){
+            const parentCat=categories.find(({_id})=>_id===selCatInfo?.parent?._id);
+            propertiesToFill.push(...parentCat.properties);
+            selCatInfo=parentCat;
+        }
+    }
     return(
         
             <form onSubmit={createProduct}>
@@ -64,6 +83,16 @@ export default function ProductForm({_id,title:existingTitle,description:existin
                     <option value={c._id}>{c.name}</option>
                 ))}
             </select>
+            {propertiesToFill.length>0 && propertiesToFill.map(p=>(
+                <div className="flex gap-1">
+                    <div>{p.name}</div>
+                    <select value={productProperties[p.name]} onChange={ev=>setProductProp(p.name,ev.target.value)}>
+                        {p.values.map(v=>(
+                            <option value={v}>{v}</option>
+                        ))}
+                    </select>
+                    </div>
+            ))}
             <label>Photos</label>
             <div className="mb-2 flex flex-wrap gap-1">
                 <ReactSortable list={images} setList={updateImagesOrder} className="flex flex-wrap gap-1">

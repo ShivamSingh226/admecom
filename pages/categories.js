@@ -18,7 +18,10 @@ function Categories({swal}){
     }
     async function saveCategory(ev){
         ev.preventDefault();
-        const data={name,parentCategory};
+        const data={name,parentCategory,properties:properties.map(p=>({name:p.name,
+            values:p.values.split(',')
+        }))
+    };
         if(editedCategory){
             data._id=editedCategory._id;
             await axios.put('/api/categories',data);
@@ -28,16 +31,21 @@ function Categories({swal}){
         }
         
         setName('');
+        setParentCategory('');
+        setProperties([]);
         fetchCategories();
     }
     function editCategory(category){
         setEditedCategory(category);
         setName(category.name);
-        if(category.parent===undefined){
-            setParentCategory('');
-        }
+      
         setParentCategory(category.parent?._id);
-        
+        setProperties(category.properties.map(({name,values})=>(
+            {
+                name,
+                values:values.join(',')
+            }
+        )))
 
     }
     function deleteCategory(category){
@@ -129,6 +137,7 @@ function Categories({swal}){
                         <button type="button" onClick={()=>{setEditedCategory(null);
                         setName('');
                         setParentCategory('');
+                        setProperties([])
                     }} 
                     className="btn-default">Cancel</button>
                     )}
