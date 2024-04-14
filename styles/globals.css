@@ -25,7 +25,7 @@ table.basic{
     @apply w-full bg-white rounded-sm shadow-md;
 }
 table.basic thead tr td{
-    @apply bg-blue-100;
+    @apply bg-blue-100 uppercase;
 }
 table.basic thead tr th
 {
